@@ -32,6 +32,7 @@ import com.datatorrent.api.DefaultInputPort;
 import com.datatorrent.api.DefaultOutputPort;
 import com.datatorrent.common.util.BaseOperator;
 import com.datatorrent.stram.plan.logical.LogicalPlan;
+import com.datatorrent.stram.plan.logical.LogicalPlan.InputPortMeta;
 
 import static org.apache.apex.malhar.stream.api.Option.Options.name;
 
@@ -80,7 +81,11 @@ public class ApexStreamImplTest
       // Assert the stream is from first operator to second operator
       Assert.assertEquals("first", stream.getSource().getOperatorMeta().getName());
       Assert.assertTrue(1 == stream.getSinks().size());
-      Assert.assertEquals("second", stream.getSinks().get(0).getOperatorWrapper().getName());
+      Collection<InputPortMeta> portMetaList = stream.getSinks();
+      Assert.assertEquals(1, portMetaList.size());
+      for (InputPortMeta inputPortMeta : portMetaList) {
+        Assert.assertEquals("second", inputPortMeta.getOperatorMeta().getName());
+      }
 
       // Assert the stream is thread local
       Assert.assertTrue(stream.getLocality() == DAG.Locality.THREAD_LOCAL);

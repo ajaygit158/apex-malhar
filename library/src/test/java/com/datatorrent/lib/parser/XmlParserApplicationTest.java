@@ -24,6 +24,8 @@ import javax.validation.ConstraintViolationException;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.datatorrent.api.Context;
 import com.datatorrent.api.DAG;
@@ -41,23 +43,31 @@ import com.datatorrent.stram.StramLocalCluster;
  */
 public class XmlParserApplicationTest
 {
+  private static final Logger LOG = LoggerFactory.getLogger(XmlParserApplicationTest.class);
   public static int TupleCount;
   public static com.datatorrent.lib.parser.XmlParserTest.EmployeeBean obj;
   @Test
   public void testApplication()
   {
     try {
+      LOG.error("Starting XmlParser test");
       LocalMode lma = LocalMode.newInstance();
       DAG dag = lma.getDAG();
+      LOG.error("XmlParser test  - 1");
       XmlDataEmitterOperator input = dag.addOperator("data", new XmlDataEmitterOperator());
       XmlParser parser = dag.addOperator("xmlparser", new XmlParser());
       ResultCollector rc = dag.addOperator("rc", new ResultCollector());
+      LOG.error("XmlParser test  - 2");
       dag.getMeta(parser).getMeta(parser.out).getAttributes().put(Context.PortContext.TUPLE_CLASS, com.datatorrent.lib.parser.XmlParserTest.EmployeeBean.class);
+      LOG.error("XmlParser test  - 3");
       ConsoleOutputOperator xmlObjectOp = dag.addOperator("xmlObjectOp", new ConsoleOutputOperator());
+      LOG.error("XmlParser test  - 4");
       xmlObjectOp.setDebug(true);
+      LOG.error("XmlParser test  - 5");
       dag.addStream("input", input.output, parser.in);
       dag.addStream("output", parser.parsedOutput, xmlObjectOp.input);
       dag.addStream("pojo", parser.out,rc.input);
+      LOG.error("XmlParser test  - 6");
       LocalMode.Controller lc = lma.getController();
       lc.setHeartbeatMonitoringEnabled(false);
       ((StramLocalCluster)lc).setExitCondition(new Callable<Boolean>()
@@ -65,12 +75,14 @@ public class XmlParserApplicationTest
         @Override
         public Boolean call() throws Exception
         {
+          LOG.error("XmlParser test  - tuple count {}", TupleCount);
           return TupleCount == 1;
         }
       });
       lc.run(10000);// runs for 10 seconds and quits
       Assert.assertEquals(1,TupleCount);
       Assert.assertEquals("john", obj.getName());
+      LOG.error("XmlParser test  - complete");
     } catch (ConstraintViolationException e) {
       Assert.fail("constraint violations: " + e.getConstraintViolations());
     }
