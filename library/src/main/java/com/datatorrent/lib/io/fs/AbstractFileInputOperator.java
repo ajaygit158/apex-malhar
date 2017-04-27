@@ -64,7 +64,6 @@ import com.datatorrent.api.InputOperator;
 import com.datatorrent.api.Operator;
 import com.datatorrent.api.Partitioner;
 import com.datatorrent.api.StatsListener;
-
 import com.datatorrent.lib.counters.BasicCounters;
 import com.datatorrent.lib.util.KryoCloneUtils;
 
@@ -122,6 +121,13 @@ public abstract class AbstractFileInputOperator<T> implements InputOperator, Par
   private int maxRetryCount = 5;
   protected transient long skipCount = 0;
   private transient OperatorContext context;
+  private int maxScanCount = -1;
+  private int scansTillNow = -1;
+  private boolean shutdown = false;
+  private boolean shutdownHandled = false;
+  private long shutdownWindowId = -1;
+  private boolean fileClosed = false;
+  protected String closedFileName;
 
   private final BasicCounters<MutableLong> fileCounters = new BasicCounters<MutableLong>(MutableLong.class);
   protected MutableLong globalNumberOfFailures = new MutableLong();
@@ -436,6 +442,33 @@ public abstract class AbstractFileInputOperator<T> implements InputOperator, Par
   }
 
   /**
+   * Returns the max number of times the directory needs to be scanned.
+   * @return the max number of times directory needs to be scanned.
+   */
+  public int getMaxScanCount()
+  {
+    return maxScanCount;
+  }
+
+  /**
+   * Sets the max number of times directory needs to be scanned.
+   * @param requiredPartitions The max number of times directory needs to be scanned.
+   */
+  public void setMaxScanCount(int maxScanCount)
+  {
+    this.maxScanCount = maxScanCount;
+  }
+
+  /**
+   * Returns the number of times the directory has been scanned.
+   * @return the number of times the directory has been scanned.
+   */
+  public int getScansTillNow()
+  {
+    return scansTillNow;
+  }
+
+  /**
    * Returns the current number of partitions for the operator.
    * @return The current number of partitions for the operator.
    */
@@ -530,6 +563,12 @@ public abstract class AbstractFileInputOperator<T> implements InputOperator, Par
   @Override
   public void beginWindow(long windowId)
   {
+    if (shutdown && !shutdownHandled) {
+      handleEndOfInputData();
+      shutdownHandled = true;
+      shutdownWindowId = currentWindowId;
+    }
+    fileClosed = false;
     currentWindowId = windowId;
     if (windowId <= windowDataManager.getLargestCompletedWindow()) {
       replay(windowId);
@@ -539,6 +578,9 @@ public abstract class AbstractFileInputOperator<T> implements InputOperator, Par
   @Override
   public void endWindow()
   {
+    if (fileClosed) {
+      emitEndBatchControlTuple();
+    }
     if (currentWindowId > windowDataManager.getLargestCompletedWindow()) {
       try {
         windowDataManager.save(currentWindowRecoveryState, currentWindowId);
@@ -578,6 +620,7 @@ public abstract class AbstractFileInputOperator<T> implements InputOperator, Par
             //In this case we continue reading from previously opened stream.
             if (currentFile == null || !(currentFile.equals(recoveryEntry.file) && offset == recoveryEntry.startOffset)) {
               if (inputStream != null) {
+                emitEndBatchControlTuple();
                 closeFile(inputStream);
               }
               processedFiles.add(recoveryEntry.file);
@@ -613,6 +656,7 @@ public abstract class AbstractFileInputOperator<T> implements InputOperator, Par
                 emit(line);
               }
               if (recoveryEntry.fileClosed) {
+                emitEndBatchControlTuple();
                 closeFile(inputStream);
               }
             } else {
@@ -622,6 +666,7 @@ public abstract class AbstractFileInputOperator<T> implements InputOperator, Par
                 emit(line);
               }
               if (recoveryEntry.fileClosed) {
+                emitEndBatchControlTuple();
                 closeFile(inputStream);
               }
             }
@@ -638,6 +683,10 @@ public abstract class AbstractFileInputOperator<T> implements InputOperator, Par
   public void emitTuples()
   {
     if (currentWindowId <= windowDataManager.getLargestCompletedWindow()) {
+      return;
+    }
+
+    if (fileClosed || shutdown) {
       return;
     }
 
@@ -662,6 +711,7 @@ public abstract class AbstractFileInputOperator<T> implements InputOperator, Par
           pendingFiles.remove(newPathString);
           if (fs.exists(new Path(newPathString))) {
             this.inputStream = openFile(new Path(newPathString));
+            emitStartBatchControlTuple();
           }
         } else if (!failedFiles.isEmpty()) {
           retryFailedFile(failedFiles.poll());
@@ -675,7 +725,6 @@ public abstract class AbstractFileInputOperator<T> implements InputOperator, Par
     if (inputStream != null) {
       long startOffset = offset;
       String file  = currentFile; //current file is reset to null when closed.
-      boolean fileClosed = false;
 
       try {
         int counterForTuple = 0;
@@ -683,6 +732,7 @@ public abstract class AbstractFileInputOperator<T> implements InputOperator, Par
           T line = readEntity();
           if (line == null) {
             LOG.info("done reading file ({} entries).", offset);
+            closedFileName = currentFile;
             closeFile(inputStream);
             fileClosed = true;
             break;
@@ -714,6 +764,9 @@ public abstract class AbstractFileInputOperator<T> implements InputOperator, Par
    */
   protected void scanDirectory()
   {
+    if (maxScanCount != -1 && scansTillNow == maxScanCount) {
+      shutdown = true;
+    }
     if (System.currentTimeMillis() - scanIntervalMillis >= lastScanMillis) {
       Set<Path> newPaths = scanner.scan(fs, filePath, processedFiles);
 
@@ -725,6 +778,7 @@ public abstract class AbstractFileInputOperator<T> implements InputOperator, Par
       }
 
       lastScanMillis = System.currentTimeMillis();
+      scansTillNow++;
     }
   }
 
@@ -949,6 +1003,14 @@ public abstract class AbstractFileInputOperator<T> implements InputOperator, Par
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+    //If operator is being used in batch scenario &&
+    //if shutdown is to be done &&
+    //if shutdownWindowId < committedWindowId
+    //we can proceed with shutdown as all operators in downstream are committed 
+    //till all data was processed
+    if (maxScanCount != -1 && shutdown && shutdownWindowId < windowId) {
+      throw new ShutdownException();
+    }
   }
 
   /**
@@ -967,6 +1029,11 @@ public abstract class AbstractFileInputOperator<T> implements InputOperator, Par
    */
   protected abstract void emit(T tuple);
 
+  protected abstract void emitStartBatchControlTuple();
+
+  protected abstract void emitEndBatchControlTuple();
+
+  protected abstract void handleEndOfInputData();
 
   /**
    * Repartition is required when number of partitions are not equal to required
@@ -1292,6 +1359,24 @@ public abstract class AbstractFileInputOperator<T> implements InputOperator, Par
     protected void emit(String tuple)
     {
       output.emit(tuple);
+    }
+
+    @Override
+    protected void emitStartBatchControlTuple()
+    {
+      //TODO : needs to be updated after updating the output port  to ControlAware
+    }
+
+    @Override
+    protected void emitEndBatchControlTuple()
+    {
+      //TODO : needs to be updated after updating the output port to ControlAware
+    }
+
+    @Override
+    protected void handleEndOfInputData()
+    {
+      // TODO Auto-generated method stub
     }
   }
 }

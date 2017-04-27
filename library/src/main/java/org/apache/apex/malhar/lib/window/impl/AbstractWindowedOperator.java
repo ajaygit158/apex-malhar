@@ -33,12 +33,15 @@ import org.joda.time.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.apache.apex.api.ControlAwareDefaultInputPort;
+import org.apache.apex.api.ControlAwareDefaultOutputPort;
+import org.apache.apex.api.operator.ControlTuple;
 import org.apache.apex.malhar.lib.state.spillable.WindowListener;
 import org.apache.apex.malhar.lib.window.Accumulation;
-import org.apache.apex.malhar.lib.window.ControlTuple;
 import org.apache.apex.malhar.lib.window.ImplicitWatermarkGenerator;
 import org.apache.apex.malhar.lib.window.TriggerOption;
 import org.apache.apex.malhar.lib.window.Tuple;
+import org.apache.apex.malhar.lib.window.WatermarkTuple;
 import org.apache.apex.malhar.lib.window.Window;
 import org.apache.apex.malhar.lib.window.WindowOption;
 import org.apache.apex.malhar.lib.window.WindowState;
@@ -50,10 +53,7 @@ import com.google.common.base.Function;
 
 import com.datatorrent.api.Component;
 import com.datatorrent.api.Context;
-import com.datatorrent.api.DefaultInputPort;
-import com.datatorrent.api.DefaultOutputPort;
 import com.datatorrent.api.Operator;
-import com.datatorrent.api.annotation.InputPortFieldAnnotation;
 import com.datatorrent.common.util.BaseOperator;
 
 /**
@@ -106,8 +106,15 @@ public abstract class AbstractWindowedOperator<InputT, OutputT, DataStorageT ext
 
   private static final transient Logger LOG = LoggerFactory.getLogger(AbstractWindowedOperator.class);
 
-  public final transient DefaultInputPort<Tuple<InputT>> input = new DefaultInputPort<Tuple<InputT>>()
+  public final transient ControlAwareDefaultInputPort<Tuple<InputT>> input = new ControlAwareDefaultInputPort<Tuple<InputT>>()
   {
+
+    @Override
+    public boolean processControl(ControlTuple tuple)
+    {
+      return processControlTuple(tuple);
+    }
+
     @Override
     public void process(Tuple<InputT> tuple)
     {
@@ -115,25 +122,9 @@ public abstract class AbstractWindowedOperator<InputT, OutputT, DataStorageT ext
     }
   };
 
-  // TODO: This port should be removed when Apex Core has native support for custom control tuples
-  @InputPortFieldAnnotation(optional = true)
-  public final transient DefaultInputPort<ControlTuple> controlInput = new DefaultInputPort<ControlTuple>()
-  {
-    @Override
-    public void process(ControlTuple tuple)
-    {
-      if (tuple instanceof ControlTuple.Watermark) {
-        processWatermark((ControlTuple.Watermark)tuple);
-      }
-    }
-  };
-
   // TODO: multiple input ports for join operations
 
-  public final transient DefaultOutputPort<Tuple.WindowedTuple<OutputT>> output = new DefaultOutputPort<>();
-
-  // TODO: This port should be removed when Apex Core has native support for custom control tuples
-  public final transient DefaultOutputPort<ControlTuple> controlOutput = new DefaultOutputPort<>();
+  public final transient ControlAwareDefaultOutputPort<Tuple.WindowedTuple<OutputT>> output = new ControlAwareDefaultOutputPort<>();
 
   /**
    * Process the incoming data tuple
@@ -154,6 +145,14 @@ public abstract class AbstractWindowedOperator<InputT, OutputT, DataStorageT ext
         implicitWatermarkGenerator.processTupleForWatermark(windowedTuple, currentDerivedTimestamp);
       }
     }
+  }
+
+  public boolean processControlTuple(ControlTuple controlTuple)
+  {
+    if (controlTuple instanceof WatermarkTuple) {
+      processWatermark((WatermarkTuple)controlTuple);
+    }
+    return false;
   }
 
   protected void processWindowState(Tuple.WindowedTuple<? extends Object> windowedTuple)
@@ -424,7 +423,7 @@ public abstract class AbstractWindowedOperator<InputT, OutputT, DataStorageT ext
   }
 
   @Override
-  public void processWatermark(ControlTuple.Watermark watermark)
+  public void processWatermark(WatermarkTuple watermark)
   {
     this.nextWatermark = watermark.getTimestamp();
   }
@@ -544,7 +543,7 @@ public abstract class AbstractWindowedOperator<InputT, OutputT, DataStorageT ext
         }
       }
       streamingWindowToLatenessHorizon.put(streamingWindowId, horizon);
-      controlOutput.emit(new WatermarkImpl(nextWatermark));
+      output.emitControl(new WatermarkImpl(nextWatermark));
       this.currentWatermark = nextWatermark;
     }
   }
