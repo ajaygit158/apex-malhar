@@ -22,6 +22,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.apache.apex.api.operator.ControlTuple;
+
 public class FSRollingMapTestImpl extends AbstractFSRollingOutputOperator<Map<String, Object>>
 {
   @Override
@@ -44,6 +46,13 @@ public class FSRollingMapTestImpl extends AbstractFSRollingOutputOperator<Map<St
       writeToHive.append(key).append(":").append(obj).append("\n");
     }
     return writeToHive.toString().getBytes();
+  }
+
+  @Override
+  public boolean handleControlTuple(ControlTuple controlTuple)
+  {
+    // TODO Auto-generated method stub
+    return false;
   }
 
 }

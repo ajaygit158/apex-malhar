@@ -28,6 +28,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.apache.apex.api.operator.ControlTuple;
 import org.apache.commons.lang.mutable.MutableLong;
 import org.apache.hadoop.fs.Path;
 
@@ -232,5 +233,12 @@ public class BlockWriter extends AbstractFileOutputOperator<AbstractBlockReader.
   }
 
   private static final Logger LOG = LoggerFactory.getLogger(BlockWriter.class);
+
+  @Override
+  public boolean handleControlTuple(ControlTuple controlTuple)
+  {
+    // TODO Needs to be updated
+    return false;
+  }
 
 }

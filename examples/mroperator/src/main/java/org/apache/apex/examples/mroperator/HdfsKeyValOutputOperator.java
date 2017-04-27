@@ -18,6 +18,8 @@
  */
 package org.apache.apex.examples.mroperator;
 
+import org.apache.apex.api.operator.ControlTuple;
+
 import com.datatorrent.lib.io.fs.AbstractSingleFileOutputOperator;
 import com.datatorrent.lib.util.KeyHashValPair;
 
@@ -37,5 +39,12 @@ public class HdfsKeyValOutputOperator<K, V> extends AbstractSingleFileOutputOper
   public byte[] getBytesForTuple(KeyHashValPair<K,V> t)
   {
     return (t.toString() + "\n").getBytes();
+  }
+
+  @Override
+  public boolean handleControlTuple(ControlTuple controlTuple)
+  {
+    // TODO Auto-generated method stub
+    return false;
   }
 }

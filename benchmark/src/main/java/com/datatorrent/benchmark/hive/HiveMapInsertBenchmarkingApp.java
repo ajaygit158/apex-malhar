@@ -27,6 +27,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.apache.apex.api.operator.ControlTuple;
 import org.apache.hadoop.conf.Configuration;
 
 import com.datatorrent.api.Context.PortContext;
@@ -34,7 +35,6 @@ import com.datatorrent.api.DAG;
 import com.datatorrent.api.StreamingApplication;
 import com.datatorrent.api.annotation.ApplicationAnnotation;
 import com.datatorrent.benchmark.RandomMapOutput;
-
 import com.datatorrent.contrib.hive.AbstractFSRollingOutputOperator;
 import com.datatorrent.contrib.hive.HiveOperator;
 import com.datatorrent.contrib.hive.HiveStore;
@@ -137,6 +137,13 @@ public class HiveMapInsertBenchmarkingApp implements StreamingApplication
         writeToHive.append(key).append(delimiter).append(obj).append("\n");
       }
       return writeToHive.toString().getBytes();
+    }
+
+    @Override
+    public boolean handleControlTuple(ControlTuple controlTuple)
+    {
+      // TODO Auto-generated method stub
+      return false;
     }
 
   }

@@ -93,7 +93,15 @@ public class WindowedOperatorTest
 
   private WindowedOperatorImpl<Long, MutableLong, Long> createDefaultWindowedOperator()
   {
-    WindowedOperatorImpl<Long, MutableLong, Long> windowedOperator = new WindowedOperatorImpl<>();
+    WindowedOperatorImpl<Long, MutableLong, Long> windowedOperator = new WindowedOperatorImpl<Long, MutableLong, Long>()
+    {
+      @Override
+      public boolean processControlTuple(org.apache.apex.api.operator.ControlTuple controlTuple)
+      {
+        // TODO Auto-generated method stub
+        return super.processControlTuple(controlTuple);
+      }
+    };
     if (useSpillable) {
       sccImpl = new SpillableComplexComponentImpl(testMeta.timeStore);
       // TODO: We don't yet support Spillable data structures for window state storage because SpillableMapImpl does not yet support iterating over all keys.
@@ -181,7 +189,7 @@ public class WindowedOperatorTest
     WindowedOperatorImpl<Long, MutableLong, Long> windowedOperator = createDefaultWindowedOperator();
     CollectorTestSink controlSink = new CollectorTestSink();
 
-    windowedOperator.controlOutput.setSink(controlSink);
+    windowedOperator.output.setSink(controlSink);
 
     windowedOperator.setWindowOption(new WindowOption.TimeWindows(Duration.millis(1000)));
     windowedOperator.setAllowedLateness(Duration.millis(1000));
@@ -203,14 +211,14 @@ public class WindowedOperatorTest
     windowedOperator.processWatermark(new WatermarkImpl(BASE + 1200));
     windowedOperator.endWindow();
     Assert.assertTrue(windowState.watermarkArrivalTime >= 0);
-    Assert.assertEquals("We should get one watermark tuple", 1, controlSink.getCount(false));
+    Assert.assertEquals("We should get one watermark tuple", 1, controlSink.collectedControlTuples.size());
 
     windowedOperator.beginWindow(2);
     windowedOperator.processTuple(new Tuple.TimestampedTuple<>(BASE + 900L, 4L));
     Assert.assertEquals("Late but not too late", 9L, plainDataStorage.get(window).longValue());
     windowedOperator.processWatermark(new WatermarkImpl(BASE + 3000));
     windowedOperator.endWindow();
-    Assert.assertEquals("We should get two watermark tuples", 2, controlSink.getCount(false));
+    Assert.assertEquals("We should get two watermark tuples", 2, controlSink.collectedControlTuples.size());
     windowedOperator.beginWindow(3);
     windowedOperator.processTuple(new Tuple.TimestampedTuple<>(BASE + 120L, 5L)); // this tuple should be dropped
     Assert.assertEquals("The window should be dropped because it's too late", 0, plainDataStorage.size());
@@ -224,8 +232,7 @@ public class WindowedOperatorTest
   {
     WindowedOperatorImpl<Long, MutableLong, Long> windowedOperator = createDefaultWindowedOperator();
     CollectorTestSink controlSink = new CollectorTestSink();
-
-    windowedOperator.controlOutput.setSink(controlSink);
+    //windowedOperator.controlOutput.setSink(controlSink);
 
     windowedOperator.setWindowOption(new WindowOption.TimeWindows(Duration.millis(1000)));
     windowedOperator.setAllowedLateness(Duration.millis(1000));

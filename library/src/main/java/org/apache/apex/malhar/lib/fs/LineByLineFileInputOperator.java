@@ -92,13 +92,14 @@ public class LineByLineFileInputOperator extends AbstractFileInputOperator<Strin
   @Override
   protected void emitEndBatchControlTuple()
   {
-    LOG.debug("Emitting end batch control tuple : {}", this.currentFile);
-    output.emitControl(new EndFileControlTuple(this.currentFile));
+    LOG.debug("Emitting end batch control tuple : {}", this.closedFileName);
+    output.emitControl(new EndFileControlTuple(this.closedFileName));
   }
 
   @Override
   protected void handleEndOfInputData()
   {
+    LOG.debug("Emitting end Application control Tuple");
     output.emitControl(new EndApplicationControlTuple.EndApplicationControlTupleImpl());
   }
 }

@@ -18,14 +18,14 @@
  */
 package org.apache.apex.malhar.lib.window.impl;
 
-import org.apache.apex.malhar.lib.window.ControlTuple;
+import org.apache.apex.api.ControlAwareDefaultInputPort;
+import org.apache.apex.api.operator.ControlTuple;
 import org.apache.apex.malhar.lib.window.Tuple;
+import org.apache.apex.malhar.lib.window.WatermarkTuple;
 import org.apache.apex.malhar.lib.window.WindowedMergeOperator;
 
 import com.google.common.base.Function;
 
-import com.datatorrent.api.DefaultInputPort;
-import com.datatorrent.api.annotation.InputPortFieldAnnotation;
 import com.datatorrent.lib.util.KeyValPair;
 
 
@@ -49,25 +49,21 @@ public class KeyedWindowedMergeOperatorImpl<KeyT, InputT1, InputT2, AccumT, Outp
 
   private WindowedMergeOperatorFeatures.Keyed joinFeatures = new WindowedMergeOperatorFeatures.Keyed(this);
 
-  public final transient DefaultInputPort<Tuple<KeyValPair<KeyT, InputT2>>> input2 = new DefaultInputPort<Tuple<KeyValPair<KeyT, InputT2>>>()
+  public final transient ControlAwareDefaultInputPort<Tuple<KeyValPair<KeyT, InputT2>>> input2 = new ControlAwareDefaultInputPort<Tuple<KeyValPair<KeyT, InputT2>>>()
   {
     @Override
     public void process(Tuple<KeyValPair<KeyT, InputT2>> tuple)
     {
       processTuple2(tuple);
     }
-  };
 
-  // TODO: This port should be removed when Apex Core has native support for custom control tuples
-  @InputPortFieldAnnotation(optional = true)
-  public final transient DefaultInputPort<ControlTuple> controlInput2 = new DefaultInputPort<ControlTuple>()
-  {
     @Override
-    public void process(ControlTuple tuple)
+    public boolean processControl(ControlTuple tuple)
     {
-      if (tuple instanceof ControlTuple.Watermark) {
-        processWatermark2((ControlTuple.Watermark)tuple);
+      if (tuple instanceof WatermarkTuple) {
+        processWatermark2((WatermarkTuple)tuple);
       }
+      return true;
     }
   };
 
@@ -96,13 +92,13 @@ public class KeyedWindowedMergeOperatorImpl<KeyT, InputT1, InputT2, AccumT, Outp
   }
 
   @Override
-  public void processWatermark(ControlTuple.Watermark watermark)
+  public void processWatermark(WatermarkTuple watermark)
   {
     joinFeatures.processWatermark1(watermark);
   }
 
   @Override
-  public void processWatermark2(ControlTuple.Watermark watermark)
+  public void processWatermark2(WatermarkTuple watermark)
   {
     joinFeatures.processWatermark2(watermark);
   }

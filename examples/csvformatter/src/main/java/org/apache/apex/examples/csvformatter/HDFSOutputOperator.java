@@ -21,6 +21,8 @@ package org.apache.apex.examples.csvformatter;
 
 import javax.validation.constraints.NotNull;
 
+import org.apache.apex.api.operator.ControlTuple;
+
 import com.datatorrent.api.Context.OperatorContext;
 import com.datatorrent.lib.io.fs.AbstractFileOutputOperator;
 
@@ -103,6 +105,13 @@ public class HDFSOutputOperator<T> extends AbstractFileOutputOperator<T>
     //if (writeFilesFlag) {
     //}
     super.processTuple(tuple);
+  }
+
+  @Override
+  public boolean handleControlTuple(ControlTuple controlTuple)
+  {
+    // TODO Auto-generated method stub
+    return false;
   }
 
 }
