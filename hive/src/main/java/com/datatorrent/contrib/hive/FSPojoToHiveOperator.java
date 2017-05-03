@@ -22,6 +22,8 @@ import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 
+import org.apache.apex.api.operator.ControlTuple;
+
 import com.google.common.collect.Lists;
 
 import com.datatorrent.lib.util.PojoUtils;
@@ -287,6 +289,13 @@ public class FSPojoToHiveOperator extends AbstractFSRollingOutputOperator<Object
     }
     result.append("\n");
     return (result.toString()).getBytes();
+  }
+
+   @Override
+  public boolean handleControlTuple(ControlTuple controlTuple)
+  {
+    // TODO Auto-generated method stub
+    return false;
   }
 
 }

@@ -106,7 +106,7 @@ public interface Tuple<T>
   {
     private long timestamp;
 
-    private TimestampedTuple()
+    public TimestampedTuple()
     {
       // for kryo
     }

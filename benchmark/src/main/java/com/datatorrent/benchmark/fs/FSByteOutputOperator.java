@@ -22,6 +22,8 @@ import java.util.Arrays;
 
 import javax.validation.constraints.Min;
 
+import org.apache.apex.api.operator.ControlTuple;
+
 import com.datatorrent.lib.io.fs.AbstractFileOutputOperator;
 
 /**
@@ -70,5 +72,12 @@ public class FSByteOutputOperator extends AbstractFileOutputOperator<byte[]>
   public int getOutputFileCount()
   {
     return outputFileCount;
+  }
+
+  @Override
+  public boolean handleControlTuple(ControlTuple controlTuple)
+  {
+    // TODO Auto-generated method stub
+    return false;
   }
 }

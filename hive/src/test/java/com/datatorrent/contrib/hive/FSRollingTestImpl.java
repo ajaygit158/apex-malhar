@@ -20,6 +20,8 @@ package com.datatorrent.contrib.hive;
 
 import java.util.ArrayList;
 
+import org.apache.apex.api.operator.ControlTuple;
+
 public class FSRollingTestImpl extends AbstractFSRollingOutputOperator<String>
 {
   @Override
@@ -34,6 +36,13 @@ public class FSRollingTestImpl extends AbstractFSRollingOutputOperator<String>
   protected byte[] getBytesForTuple(String tuple)
   {
     return (tuple + "\n").getBytes();
+  }
+
+  @Override
+  public boolean handleControlTuple(ControlTuple controlTuple)
+  {
+    // TODO Auto-generated method stub
+    return false;
   }
 
 }

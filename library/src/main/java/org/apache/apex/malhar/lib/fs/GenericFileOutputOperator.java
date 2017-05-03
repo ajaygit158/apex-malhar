@@ -28,6 +28,8 @@ import javax.validation.constraints.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.apache.apex.api.operator.ControlTuple;
+
 import com.datatorrent.api.AutoMetric;
 import com.datatorrent.api.Context.OperatorContext;
 import com.datatorrent.api.StreamCodec;
@@ -348,4 +350,10 @@ public class GenericFileOutputOperator<INPUT> extends AbstractSingleFileOutputOp
   }
 
   private static final Logger LOG = LoggerFactory.getLogger(GenericFileOutputOperator.class);
+
+  @Override
+  public boolean handleControlTuple(ControlTuple controlTuple)
+  {
+    return false;
+  }
 }

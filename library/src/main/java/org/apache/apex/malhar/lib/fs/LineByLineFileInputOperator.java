@@ -23,9 +23,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-import org.apache.hadoop.fs.Path;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.datatorrent.api.DefaultOutputPort;
+import org.apache.apex.api.ControlAwareDefaultOutputPort;
+import org.apache.apex.malhar.lib.batch.EndApplicationControlTuple;
+import org.apache.apex.malhar.lib.batch.FileControlTuple.EndFileControlTuple;
+import org.apache.apex.malhar.lib.batch.FileControlTuple.StartFileControlTuple;
+import org.apache.hadoop.fs.Path;
 
 import com.datatorrent.lib.io.fs.AbstractFileInputOperator;
 
@@ -43,7 +48,9 @@ import com.datatorrent.lib.io.fs.AbstractFileInputOperator;
  */
 public class LineByLineFileInputOperator extends AbstractFileInputOperator<String>
 {
-  public final transient DefaultOutputPort<String> output = new DefaultOutputPort<String>();
+  private static final Logger LOG = LoggerFactory.getLogger(LineByLineFileInputOperator.class);
+
+  public final transient ControlAwareDefaultOutputPort<String> output = new ControlAwareDefaultOutputPort<String>();
 
   protected transient BufferedReader br;
 
@@ -73,5 +80,26 @@ public class LineByLineFileInputOperator extends AbstractFileInputOperator<Strin
   protected void emit(String tuple)
   {
     output.emit(tuple);
+  }
+
+  @Override
+  protected void emitStartBatchControlTuple()
+  {
+    LOG.debug("Emitting start batch control tuple : {}", this.currentFile);
+    output.emitControl(new StartFileControlTuple(this.currentFile));
+  }
+
+  @Override
+  protected void emitEndBatchControlTuple()
+  {
+    LOG.debug("Emitting end batch control tuple : {}", this.closedFileName);
+    output.emitControl(new EndFileControlTuple(this.closedFileName));
+  }
+
+  @Override
+  protected void handleEndOfInputData()
+  {
+    LOG.debug("Emitting end Application control Tuple");
+    output.emitControl(new EndApplicationControlTuple.EndApplicationControlTupleImpl());
   }
 }

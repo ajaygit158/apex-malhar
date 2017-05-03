@@ -16,35 +16,22 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.apex.examples.mroperator;
+
+package org.apache.apex.malhar.lib.batch;
 
 import org.apache.apex.api.operator.ControlTuple;
+import org.apache.hadoop.classification.InterfaceStability.Evolving;
 
-import com.datatorrent.lib.io.fs.AbstractSingleFileOutputOperator;
-import com.datatorrent.lib.util.KeyHashValPair;
-
-/**
- * Adapter for writing KeyHashValPair objects to HDFS
- * <p>
- * Serializes tuples into a HDFS file.<br/>
- * </p>
- *
- * @param <K> Key type
- * @param <V> Value type
- * @since 0.9.4
- */
-public class HdfsKeyValOutputOperator<K, V> extends AbstractSingleFileOutputOperator<KeyHashValPair<K, V>>
+@Evolving
+public interface BatchControlTuple extends ControlTuple
 {
-  @Override
-  public byte[] getBytesForTuple(KeyHashValPair<K,V> t)
+  @Evolving
+  public interface StartBatchControlTuple extends BatchControlTuple
   {
-    return (t.toString() + "\n").getBytes();
   }
 
-  @Override
-  public boolean handleControlTuple(ControlTuple controlTuple)
+  @Evolving
+  public interface EndBatchControlTuple extends BatchControlTuple
   {
-    // TODO Auto-generated method stub
-    return false;
   }
 }

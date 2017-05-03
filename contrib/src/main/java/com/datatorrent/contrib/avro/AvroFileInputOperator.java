@@ -167,4 +167,22 @@ public class AvroFileInputOperator extends AbstractFileInputOperator<GenericReco
 
   private static final Logger LOG = LoggerFactory.getLogger(AvroFileInputOperator.class);
 
+  @Override
+  protected void emitStartBatchControlTuple()
+  {
+    //TODO : needs to be updated after updating the output port to ControlAware
+  }
+
+  @Override
+  protected void emitEndBatchControlTuple()
+  {
+    //TODO : needs to be updated after updating the output port to ControlAware
+  }
+
+  @Override
+  protected void handleEndOfInputData()
+  {
+    // TODO Auto-generated method stub
+  }
+
 }

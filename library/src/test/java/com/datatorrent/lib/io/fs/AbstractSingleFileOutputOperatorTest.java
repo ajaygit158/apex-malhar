@@ -25,6 +25,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.Description;
 
+import org.apache.apex.api.operator.ControlTuple;
 import org.apache.commons.lang.mutable.MutableLong;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.hadoop.conf.Configuration;
@@ -74,6 +75,13 @@ public class AbstractSingleFileOutputOperatorTest
     {
       throw new UnsupportedOperationException("Not supported yet.");
     }
+
+    @Override
+    public boolean handleControlTuple(ControlTuple controlTuple)
+    {
+      // TODO Auto-generated method stub
+      return false;
+    }
   }
 
   /**
@@ -91,6 +99,13 @@ public class AbstractSingleFileOutputOperatorTest
     protected byte[] getBytesForTuple(Integer tuple)
     {
       return (tuple.toString() + "\n").getBytes();
+    }
+
+    @Override
+    public boolean handleControlTuple(ControlTuple controlTuple)
+    {
+      // TODO Auto-generated method stub
+      return false;
     }
   }
 

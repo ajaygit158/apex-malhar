@@ -72,4 +72,22 @@ public class LineReader extends AbstractFileInputOperator<byte[]>
   {
     output.emit(tuple);
   }
+
+  @Override
+  protected void emitStartBatchControlTuple()
+  {
+    //TODO : needs to be updated after updating the output port to ControlAware
+  }
+
+  @Override
+  protected void emitEndBatchControlTuple()
+  {
+    //TODO : needs to be updated after updating the output port to ControlAware
+  }
+
+  @Override
+  protected void handleEndOfInputData()
+  {
+    //TODO : needs to be updated after updating the output port to ControlAware
+  }
 }

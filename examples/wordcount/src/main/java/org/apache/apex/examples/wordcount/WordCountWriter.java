@@ -19,12 +19,13 @@
 package org.apache.apex.examples.wordcount;
 
 import java.io.UnsupportedEncodingException;
-
 import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import org.apache.apex.api.operator.ControlTuple;
 
 import com.datatorrent.lib.io.fs.AbstractFileOutputOperator;
 
@@ -104,6 +105,13 @@ public class WordCountWriter extends AbstractFileOutputOperator<Map<String, Obje
     } catch (UnsupportedEncodingException ex) {
       throw new RuntimeException("Should never get here", ex);
     }
+  }
+
+  @Override
+  public boolean handleControlTuple(ControlTuple controlTuple)
+  {
+    // TODO Auto-generated method stub
+    return false;
   }
 
 }

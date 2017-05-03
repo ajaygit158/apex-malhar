@@ -52,6 +52,7 @@ import org.junit.runner.Description;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.apache.apex.api.operator.ControlTuple;
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -142,6 +143,13 @@ public class AbstractFileOutputOperatorTest
     {
       return (tuple.toString() + "\n").getBytes();
     }
+
+    @Override
+    public boolean handleControlTuple(ControlTuple controlTuple)
+    {
+      // TODO To be Handle later
+      return false;
+    }
   }
 
   /**
@@ -165,6 +173,13 @@ public class AbstractFileOutputOperatorTest
     protected byte[] getBytesForTuple(Integer tuple)
     {
       return (tuple.toString() + "\n").getBytes();
+    }
+
+    @Override
+    public boolean handleControlTuple(ControlTuple controlTuple)
+    {
+      // TODO Auto-generated method stub
+      return false;
     }
   }
 
@@ -193,6 +208,13 @@ public class AbstractFileOutputOperatorTest
     protected byte[] getBytesForTuple(byte[] tuple)
     {
       return tuple;
+    }
+
+    @Override
+    public boolean handleControlTuple(ControlTuple controlTuple)
+    {
+      // TODO Auto-generated method stub
+      return false;
     }
   }
   /**

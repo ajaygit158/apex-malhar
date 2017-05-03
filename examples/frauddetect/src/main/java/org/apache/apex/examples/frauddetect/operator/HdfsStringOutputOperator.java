@@ -20,6 +20,8 @@ package org.apache.apex.examples.frauddetect.operator;
 
 import java.io.File;
 
+import org.apache.apex.api.operator.ControlTuple;
+
 import com.datatorrent.api.Context.DAGContext;
 import com.datatorrent.api.Context.OperatorContext;
 import com.datatorrent.lib.io.fs.AbstractFileOutputOperator;
@@ -68,5 +70,12 @@ public class HdfsStringOutputOperator extends AbstractFileOutputOperator<String>
   public String getPartFileName(String fileName, int part)
   {
     return fileName + part;
+  }
+
+  @Override
+  public boolean handleControlTuple(ControlTuple controlTuple)
+  {
+    // TODO Auto-generated method stub
+    return false;
   }
 }

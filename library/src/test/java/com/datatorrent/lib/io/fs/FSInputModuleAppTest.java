@@ -30,6 +30,8 @@ import org.junit.Test;
 import org.junit.rules.TestWatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import org.apache.apex.api.operator.ControlTuple;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.apache.hadoop.conf.Configuration;
@@ -191,6 +193,13 @@ public class FSInputModuleAppTest
     {
       return (tuple).toString().getBytes();
     }
+
+    @Override
+    public boolean handleControlTuple(ControlTuple controlTuple)
+    {
+      // TODO Auto-generated method stub
+      return false;
+    }
   }
 
   private static class HDFSFileWriter extends AbstractFileOutputOperator<ReaderRecord<Slice>>
@@ -217,6 +226,13 @@ public class FSInputModuleAppTest
     protected byte[] getBytesForTuple(ReaderRecord<Slice> tuple)
     {
       return tuple.getRecord().buffer;
+    }
+
+    @Override
+    public boolean handleControlTuple(ControlTuple controlTuple)
+    {
+      // TODO Auto-generated method stub
+      return false;
     }
   }
 

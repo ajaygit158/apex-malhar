@@ -25,7 +25,7 @@ import java.util.Set;
 
 import org.joda.time.Duration;
 
-import org.apache.apex.malhar.lib.window.ControlTuple;
+import org.apache.apex.api.operator.ControlTuple;
 import org.apache.apex.malhar.lib.window.TriggerOption;
 import org.apache.apex.malhar.lib.window.Tuple;
 import org.apache.apex.malhar.lib.window.Window;
@@ -33,7 +33,6 @@ import org.apache.apex.malhar.lib.window.WindowOption;
 import org.apache.apex.malhar.lib.window.WindowState;
 import org.apache.apex.malhar.lib.window.WindowedStorage;
 import org.apache.apex.malhar.lib.window.accumulation.InnerJoin;
-
 import org.apache.hadoop.conf.Configuration;
 
 import com.datatorrent.api.Context;
@@ -190,8 +189,8 @@ public class KeyedWindowedMergeOperatorTestApplication implements StreamingAppli
 
     dag.addStream("num1", numGen1.output, op.input);
     dag.addStream("num2", numGen2.output, op.input2);
-    dag.addStream("wm1", numGen1.watermarkDefaultOutputPort, op.controlInput);
-    dag.addStream("wm2", numGen2.watermarkDefaultOutputPort, op.controlInput2);
+//    dag.addStream("wm1", numGen1.watermarkDefaultOutputPort, op.controlInput);
+//    dag.addStream("wm2", numGen2.watermarkDefaultOutputPort, op.controlInput2);
 
     dag.addStream("MergedResult", op.output, collector.input);
     dag.addStream("output", collector.output, con.input);

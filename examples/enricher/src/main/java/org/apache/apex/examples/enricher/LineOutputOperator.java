@@ -24,6 +24,8 @@ import java.nio.charset.StandardCharsets;
 
 import javax.validation.constraints.NotNull;
 
+import org.apache.apex.api.operator.ControlTuple;
+
 import com.datatorrent.lib.io.fs.AbstractFileOutputOperator;
 
 /**
@@ -60,5 +62,12 @@ public class LineOutputOperator extends AbstractFileOutputOperator<Object>
   public void setBaseName(String v)
   {
     baseName = v;
+  }
+
+  @Override
+  public boolean handleControlTuple(ControlTuple controlTuple)
+  {
+    // TODO Auto-generated method stub
+    return false;
   }
 }

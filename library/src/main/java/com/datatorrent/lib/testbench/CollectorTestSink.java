@@ -21,7 +21,9 @@ package com.datatorrent.lib.testbench;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.datatorrent.api.Sink;
+import org.apache.apex.api.operator.ControlTuple;
+
+import com.datatorrent.api.ControlTupleEnabledSink;
 
 /**
  * A sink implementation to collect expected test results.
@@ -31,9 +33,10 @@ import com.datatorrent.api.Sink;
  * @tags sink
  * @since 0.3.2
  */
-public class CollectorTestSink<T> implements Sink<T>
+public class CollectorTestSink<T> implements ControlTupleEnabledSink<T>
 {
   public final List<T> collectedTuples = new ArrayList<T>();
+  public final List<ControlTuple> collectedControlTuples = new ArrayList<>();
 
   /**
    * clears data
@@ -50,6 +53,16 @@ public class CollectorTestSink<T> implements Sink<T>
       collectedTuples.add(payload);
       collectedTuples.notifyAll();
     }
+  }
+
+  @Override
+  public boolean putControl(ControlTuple controlTuple)
+  {
+    synchronized (collectedControlTuples) {
+      collectedControlTuples.add(controlTuple);
+      collectedControlTuples.notifyAll();
+    }
+    return false;
   }
 
   public void waitForResultCount(int count, long timeoutMillis) throws InterruptedException

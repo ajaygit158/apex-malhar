@@ -28,16 +28,14 @@ import javax.validation.constraints.Min;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.apache.apex.api.operator.ControlTuple;
 import org.apache.hadoop.conf.Configuration;
 
 import com.datatorrent.api.Context.OperatorContext;
-
 import com.datatorrent.api.DAG;
 import com.datatorrent.api.DefaultOutputPort;
 import com.datatorrent.api.InputOperator;
-
 import com.datatorrent.api.StreamingApplication;
-
 import com.datatorrent.api.annotation.ApplicationAnnotation;
 import com.datatorrent.contrib.hive.AbstractFSRollingOutputOperator;
 import com.datatorrent.contrib.hive.HiveOperator;
@@ -132,6 +130,13 @@ public class HiveInsertBenchmarkingApp implements StreamingApplication
     protected byte[] getBytesForTuple(String tuple)
     {
       return (tuple + "\n").getBytes();
+    }
+
+    @Override
+    public boolean handleControlTuple(ControlTuple controlTuple)
+    {
+      // TODO Auto-generated method stub
+      return false;
     }
 
   }

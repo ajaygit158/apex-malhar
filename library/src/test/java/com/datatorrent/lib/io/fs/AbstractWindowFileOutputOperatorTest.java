@@ -22,6 +22,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.Description;
 
+import org.apache.apex.api.operator.ControlTuple;
+
 import com.datatorrent.api.Context.OperatorContext;
 import com.datatorrent.api.annotation.Stateless;
 import com.datatorrent.lib.io.fs.AbstractFileOutputOperatorTest.FSTestWatcher;
@@ -61,6 +63,13 @@ public class AbstractWindowFileOutputOperatorTest
     protected byte[] getBytesForTuple(String tuple)
     {
       return (tuple + "\n").getBytes();
+    }
+
+    @Override
+    public boolean handleControlTuple(ControlTuple controlTuple)
+    {
+      // TODO Auto-generated method stub
+      return false;
     }
   }
 

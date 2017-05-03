@@ -26,12 +26,14 @@ import org.apache.hadoop.classification.InterfaceStability;
  *
  * @since 3.5.0
  */
+@Deprecated
 @InterfaceStability.Evolving
 public interface ControlTuple
 {
   /**
    * Watermark control tuple
    */
+  @Deprecated
   interface Watermark extends ControlTuple
   {
     /**

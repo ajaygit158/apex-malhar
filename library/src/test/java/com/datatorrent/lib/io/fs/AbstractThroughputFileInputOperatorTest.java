@@ -179,5 +179,21 @@ public class AbstractThroughputFileInputOperatorTest
     protected void emit(String tuple)
     {
     }
+
+    @Override
+    protected void emitStartBatchControlTuple()
+    {
+    }
+
+    @Override
+    protected void emitEndBatchControlTuple()
+    {
+    }
+
+    @Override
+    protected void handleEndOfInputData()
+    {
+      // TODO Auto-generated method stub
+    }
   }
 }
