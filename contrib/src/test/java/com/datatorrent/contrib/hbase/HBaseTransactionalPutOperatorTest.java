@@ -92,6 +92,12 @@ public class HBaseTransactionalPutOperatorTest {
         {
           return 0;
         }
+
+        @Override
+        public String getName()
+        {
+          return "TestHBasePutOperator";
+        }
       });
       thop.beginWindow(0);
       thop.input.process(t1);
@@ -161,6 +167,12 @@ public class HBaseTransactionalPutOperatorTest {
         public int getWindowsFromCheckpoint()
         {
           return 0;
+        }
+
+        @Override
+        public String getName()
+        {
+          return "TestHBasePutOperator";
         }
       });
       thop.beginWindow(0);
@@ -235,6 +247,13 @@ public class HBaseTransactionalPutOperatorTest {
         public int getWindowsFromCheckpoint()
         {
           return 0;
+        }
+
+        @Override
+        public String getName()
+        {
+          // TODO Auto-generated method stub
+          return "TestHBasePutOperator";
         }
       });
 
