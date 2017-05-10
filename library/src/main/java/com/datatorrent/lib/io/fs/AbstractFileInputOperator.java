@@ -64,7 +64,6 @@ import com.datatorrent.api.InputOperator;
 import com.datatorrent.api.Operator;
 import com.datatorrent.api.Partitioner;
 import com.datatorrent.api.StatsListener;
-
 import com.datatorrent.lib.counters.BasicCounters;
 import com.datatorrent.lib.util.KryoCloneUtils;
 
@@ -122,6 +121,7 @@ public abstract class AbstractFileInputOperator<T> implements InputOperator, Par
   private int maxRetryCount = 5;
   protected transient long skipCount = 0;
   private transient OperatorContext context;
+  protected boolean isBatchEnd = false;
 
   private final BasicCounters<MutableLong> fileCounters = new BasicCounters<MutableLong>(MutableLong.class);
   protected MutableLong globalNumberOfFailures = new MutableLong();
@@ -641,6 +641,10 @@ public abstract class AbstractFileInputOperator<T> implements InputOperator, Par
       return;
     }
 
+    if (isBatchEnd) {
+      return;
+    }
+
     if (inputStream == null) {
       try {
         if (currentFile != null && offset > 0) {
@@ -661,7 +665,7 @@ public abstract class AbstractFileInputOperator<T> implements InputOperator, Par
           String newPathString = pendingFiles.iterator().next();
           pendingFiles.remove(newPathString);
           if (fs.exists(new Path(newPathString))) {
-            this.inputStream = openFile(new Path(newPathString));
+            openPendingFile(newPathString);
           }
         } else if (!failedFiles.isEmpty()) {
           retryFailedFile(failedFiles.poll());
@@ -676,7 +680,6 @@ public abstract class AbstractFileInputOperator<T> implements InputOperator, Par
       long startOffset = offset;
       String file  = currentFile; //current file is reset to null when closed.
       boolean fileClosed = false;
-
       try {
         int counterForTuple = 0;
         while (counterForTuple++ < emitBatchSize) {
@@ -709,6 +712,10 @@ public abstract class AbstractFileInputOperator<T> implements InputOperator, Par
     }
   }
 
+  public void openPendingFile(String newPathString) throws IllegalArgumentException, IOException
+  {
+    this.inputStream = openFile(new Path(newPathString));
+  }
   /**
    * Scans the directory for new files.
    */
@@ -966,7 +973,6 @@ public abstract class AbstractFileInputOperator<T> implements InputOperator, Par
    * @param tuple
    */
   protected abstract void emit(T tuple);
-
 
   /**
    * Repartition is required when number of partitions are not equal to required
