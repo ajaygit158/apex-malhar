@@ -32,7 +32,7 @@ import com.datatorrent.netlet.util.Slice;
 public class BufferSlice extends Slice
 {
   private static final long serialVersionUID = -471209532589983329L;
-  public static final BufferSlice EMPTY_SLICE = new BufferSlice(null, 0, 0);
+  public static final BufferSlice EMPTY_SLICE = new BufferSlice(new byte[0]);
 
   //for kyro
   private BufferSlice()
