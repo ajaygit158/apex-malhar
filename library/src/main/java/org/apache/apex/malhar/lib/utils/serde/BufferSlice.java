@@ -20,8 +20,6 @@ package org.apache.apex.malhar.lib.utils.serde;
 
 import org.getopt.util.hash.MurmurHash;
 
-import org.apache.commons.lang3.ArrayUtils;
-
 import com.datatorrent.netlet.util.Slice;
 
 /**
@@ -34,7 +32,7 @@ import com.datatorrent.netlet.util.Slice;
 public class BufferSlice extends Slice
 {
   private static final long serialVersionUID = -471209532589983329L;
-  public static final BufferSlice EMPTY_SLICE = new BufferSlice(ArrayUtils.EMPTY_BYTE_ARRAY);
+  public static final BufferSlice EMPTY_SLICE = new BufferSlice(null, 0, 0);
 
   //for kyro
   private BufferSlice()
