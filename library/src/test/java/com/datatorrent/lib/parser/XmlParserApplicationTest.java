@@ -32,10 +32,10 @@ import com.datatorrent.api.DAG;
 import com.datatorrent.api.DefaultInputPort;
 import com.datatorrent.api.DefaultOutputPort;
 import com.datatorrent.api.InputOperator;
-import com.datatorrent.api.LocalMode;
 import com.datatorrent.common.util.BaseOperator;
 import com.datatorrent.lib.io.ConsoleOutputOperator;
-import com.datatorrent.stram.StramLocalCluster;
+import com.datatorrent.stram.MyLocalMode;
+import com.datatorrent.stram.MyStramLocalCluster;
 
 /**
  * Test to check if a tuple class can be set properly for XMLParser and
@@ -51,7 +51,7 @@ public class XmlParserApplicationTest
   {
     try {
       LOG.error("Starting XmlParser test");
-      LocalMode lma = LocalMode.newInstance();
+      MyLocalMode lma = MyLocalMode.newInstance();
       DAG dag = lma.getDAG();
       LOG.error("XmlParser test  - 1");
       XmlDataEmitterOperator input = dag.addOperator("data", new XmlDataEmitterOperator());
@@ -68,10 +68,10 @@ public class XmlParserApplicationTest
       dag.addStream("output", parser.parsedOutput, xmlObjectOp.input);
       dag.addStream("pojo", parser.out,rc.input);
       LOG.error("XmlParser test  - 6");
-      LocalMode.Controller lc = lma.getController();
+      MyLocalMode.Controller lc = lma.getController();
       lc.setHeartbeatMonitoringEnabled(false);
       LOG.error("XmlParser test  - 7");
-      ((StramLocalCluster)lc).setExitCondition(new Callable<Boolean>()
+      ((MyStramLocalCluster)lc).setExitCondition(new Callable<Boolean>()
       {
         @Override
         public Boolean call() throws Exception
